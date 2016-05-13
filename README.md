@@ -1,2 +1,2 @@
-# tia-bot
-bom dia boa noite bom dia boa noite
+# quibe-bot
+Um bot pro Telegram feito à base sassami de frango empanado
