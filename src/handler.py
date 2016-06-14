@@ -69,7 +69,7 @@ def auto_msg_job(bot):
 	if (timenow.tm_hour + 2) in AUTO_MSG_TIME and timenow.tm_min == 0:
 		for chat_id in auto_msg_targets:
 			try:
-
+				pass
 			except Exception as e:
 				traceback.print_exc()
 
