@@ -27,13 +27,21 @@ def main():
 
 	dispatcher.addTelegramCommandHandler('start', handler.help)
 	dispatcher.addTelegramCommandHandler('help', handler.help)
+
 	dispatcher.addTelegramCommandHandler('quibe', handler.quibe)
 	dispatcher.addTelegramCommandHandler('kibe', handler.quibe)
+
+	dispatcher.addTelegramCommandHandler('subscribe', handler.subscribe)
+	dispatcher.addTelegramCommandHandler('inscrever', handler.subscribe)
+
+	dispatcher.addTelegramCommandHandler('unsubscribe', handler.unsubscribe)
+	dispatcher.addTelegramCommandHandler('desinscrever', handler.unsubscribe)
+
 
 	dispatcher.addTelegramMessageHandler(handler.unknown)
 	dispatcher.addUnknownTelegramCommandHandler(handler.unknown)
 
-	# job_queue.put(handler.auto_msg_job, 55)
+	job_queue.put(handler.auto_msg_job, 50)
 
 	updater.start_polling()
 
