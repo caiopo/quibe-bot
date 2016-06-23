@@ -73,6 +73,8 @@ def sendto(bot, update):
 	try:
 		target = update.message.text.split()[1]
 	except IndexError:
+		bot.sendMessage(chat_id=update.message.chat_id,
+						text='This command needs an argument')
 		return
 
 	resp = requests.get(JSON_SOURCE)
