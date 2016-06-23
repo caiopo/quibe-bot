@@ -1,0 +1,4 @@
+pytz == 2015.7
+requests == 2.9.1
+python_telegram_bot == 3.3
+telegram == 0.0.1

@@ -37,6 +37,7 @@ def main():
 	dispatcher.addTelegramCommandHandler('unsubscribe', handler.unsubscribe)
 	dispatcher.addTelegramCommandHandler('desinscrever', handler.unsubscribe)
 
+	dispatcher.addTelegramCommandHandler('sendto', handler.sendto)
 
 	dispatcher.addTelegramMessageHandler(handler.unknown)
 	dispatcher.addUnknownTelegramCommandHandler(handler.unknown)

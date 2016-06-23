@@ -1,21 +1,24 @@
-from time import localtime
+from pytz import timezone
+from datetime import datetime
 
-weekdays = ['Segunda', 'Terca', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo']
+weekdays = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo']
 
 help = """Digite /quibe que eu te conto o que as tias do RU estão preparando pra ti hoje
 
-Feito à base sassami de frango empanado
+Você também pode me enviar /subscribe e eu te enviarei o cardápio do RU todos os dias
 
 Inspirado em https://voucomerno.ru/ (também é de onde eu pego o cardápio)
 
-Meu repositório: http://github.com/caiopo/quibe-bot"""
+Meu repositório: http://github.com/caiopo/quibe-bot
+
+Feito por @caiopo"""
 
 _cardapio = """*{weekday}, {day}/{month}*
 hoje tem:
-- {main}
-- {complement}
-- {salad}
-- {dessert}"""
+\u2022 {main}
+\u2022 {complement}
+\u2022 {salad}
+\u2022 {dessert}"""
 
 unknown_command = 'Que isso?'
 
@@ -28,12 +31,12 @@ unsubscribe = 'Inscrição removida!'
 not_subscribed = 'Você não está inscrito!'
 
 def cardapio(menu):
-	timenow = localtime()
+	timetuple = datetime.now(timezone('America/Sao_Paulo')).timetuple()
 
 	return _cardapio.format(
-			weekday=weekdays[timenow.tm_wday],
-			day=timenow.tm_mday,
-			month=timenow.tm_mon,
+			weekday=weekdays[timetuple.tm_wday],
+			day=timetuple.tm_mday,
+			month=str(timetuple.tm_mon).zfill(2),
 			main=menu['main'],
 			complement=menu['complement'],
 			salad=menu['salad'],
