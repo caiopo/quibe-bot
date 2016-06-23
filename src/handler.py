@@ -1,9 +1,7 @@
 import telegram
 import config
-import time
 import responses
 import requests
-import json
 import traceback
 
 from pytz import timezone
@@ -26,6 +24,7 @@ def start(bot, update):
 	bot.sendMessage(chat_id=update.message.chat_id,
 					text=responses.start)
 
+
 def help(bot, update):
 	bot.sendMessage(chat_id=update.message.chat_id,
 					text=responses.help,
@@ -37,14 +36,7 @@ def unknown(bot, update):
 						text=responses.unknown_command)
 
 def quibe(bot, update):
-	try:
-		resp = requests.get(JSON_SOURCE)
-
-		bot.sendMessage(chat_id=update.message.chat_id,
-						text=responses.cardapio(resp.json()),
-						parse_mode=telegram.ParseMode.MARKDOWN)
-	except Exception as e:
-		_something_wrong(bot, update, e)
+	_send_menu(bot, update.message.chat_id)
 
 def subscribe(bot, update):
 	global automsg_targets
@@ -73,13 +65,23 @@ def unsubscribe(bot, update):
 						text=responses.not_subscribed)
 
 def sendto(bot, update):
-	target = update.message.text.split()[1]
+	if str(update.message.chat_id) != config.MAINTAINER_ID:
+		bot.sendMessage(chat_id=update.message.chat_id,
+						text='This feature is only enabled to the maintainer')
+		return
+
+	try:
+		target = update.message.text.split()[1]
+	except IndexError:
+		return
 
 	resp = requests.get(JSON_SOURCE)
 
-	bot.sendMessage(chat_id=target,
-					text=responses.cardapio(resp.json()),
-					parse_mode=telegram.ParseMode.MARKDOWN)
+	_send_menu(bot, target, resp.json())
+
+def error(bot, update, e):
+	bot.sendMessage(chat_id=config.MAINTAINER_ID,
+					text='Error on @quibebot\nUpdate: {}\nError type: {}\nError: {}'.format(update, type(e), e))
 
 def auto_msg_job(bot):
 	global automsg_targets, recently_sent
@@ -88,21 +90,31 @@ def auto_msg_job(bot):
 		recently_sent = False
 		return
 
-	timenow = time.localtime()
-
-	resp = requests.get(JSON_SOURCE)
-
 	if _valid_time():
+		menu_dict = requests.get(JSON_SOURCE).json()
+
 		recently_sent = True
+
 		for chat_id in automsg_targets:
-			bot.sendMessage(chat_id=chat_id,
-							text=responses.cardapio(resp.json()),
-							parse_mode=telegram.ParseMode.MARKDOWN)
+			_send_menu(bot, chat_id, menu_dict)
+
+def _send_menu(bot, chat_id, menu_dict=None):
+	if not menu_dict:
+		menu_dict = requests.get(JSON_SOURCE).json()
+
+	msg = responses.cardapio(menu_dict)
+
+	if str(chat_id)[0] == '@':
+		msg = '@quibebot:\n' + msg
+
+	bot.sendMessage(chat_id=chat_id,
+					text=msg,
+					parse_mode=telegram.ParseMode.MARKDOWN)
 
 def _start_automsg():
 	global automsg_targets
 
-	print('Using path:', AUTO_MSG_PATH)
+	print('Using file:', AUTO_MSG_PATH)
 
 	try:
 		with open(AUTO_MSG_PATH) as targets:
@@ -115,10 +127,6 @@ def _save_automsg():
 	with open(AUTO_MSG_PATH, 'w') as targets:
 		for chat_id in automsg_targets:
 			targets.write(chat_id+'\n')
-
-def _something_wrong(bot, update, e):
-	bot.sendMessage(chat_id=update.message.chat_id,
-					text='Something went wrong...\nError type: {}\nError message: {}'.format(type(e), e))
 
 def _valid_time():
 	timetuple = datetime.now(timezone('America/Sao_Paulo')).timetuple()

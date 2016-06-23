@@ -4,6 +4,7 @@ import logging
 import handler
 import argparse
 import config
+
 from telegram import Updater
 
 def resolve_args():
@@ -37,10 +38,13 @@ def main():
 	dispatcher.addTelegramCommandHandler('unsubscribe', handler.unsubscribe)
 	dispatcher.addTelegramCommandHandler('desinscrever', handler.unsubscribe)
 
-	dispatcher.addTelegramCommandHandler('sendto', handler.sendto)
 
 	dispatcher.addTelegramMessageHandler(handler.unknown)
 	dispatcher.addUnknownTelegramCommandHandler(handler.unknown)
+
+	if config.MAINTAINER_ID:
+		dispatcher.addTelegramCommandHandler('sendto', handler.sendto)
+		dispatcher.addErrorHandler(handler.error)
 
 	job_queue.put(handler.auto_msg_job, 50)
 
