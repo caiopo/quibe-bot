@@ -18,7 +18,7 @@ from os.path import dirname, realpath
 
 JSON_SOURCE = 'https://voucomerno.ru/menu.json'
 AUTO_MSG_PATH = dirname(realpath(__file__)) + '/automsg.txt'
-AUTO_MSG_TIME = (10, 30)
+AUTO_MSG_TIME = (10, 40)
 
 recently_sent = False
 
