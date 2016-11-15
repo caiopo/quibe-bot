@@ -1,8 +1,8 @@
 import requests
 import bs4
 
+from pytz import timezone
 from datetime import datetime
-from pprint import pprint
 
 def fetch():
     resp = requests.get('http://ru.ufsc.br/ru/')
@@ -14,16 +14,11 @@ def fetch():
 
     cardapio = [entry.text for entry in bs.find_all(align='center')][3:]
 
-    weekday = datetime.now().weekday()
+    weekday = datetime.now(timezone('America/Sao_Paulo')).weekday()
 
     today = cardapio[(weekday * 6 + 2):(weekday * 6 + 6)]
 
-    today = [item.strip(' \n\xa0').replace('\n', '').lower() for item in today]
+    today = [item.strip(' \n\xa0').replace('\n', '').replace('/', ' e ').lower()
+                for item in today]
 
     return today
-
-
-if __name__ == '__main__':
-    import responses
-
-    print(responses.cardapio())

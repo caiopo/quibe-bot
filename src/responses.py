@@ -42,3 +42,8 @@ def cardapio():
             strmenu += '\n\u2022 ' + item
 
     return strmenu
+
+if __name__ == '__main__':
+    import responses
+
+    print(responses.cardapio())
