@@ -1,26 +1,23 @@
 from pytz import timezone
 from datetime import datetime
+from update import fetch
 
 weekdays = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo']
 
-help = """Digite /quibe que eu te conto o que as tias do RU estão preparando pra ti hoje
+help = """Me manda um /quibe que eu te conto o que as tias do RU estão preparando hoje
 
 Você também pode me enviar /subscribe e eu te enviarei o cardápio do RU todos os dias
 
-Inspirado em https://voucomerno.ru/ (também é de onde eu pego o cardápio)
+Inspirado em https://voucomerno.ru/
 
 Meu repositório: http://github.com/caiopo/quibe-bot
 
 Feito por @caiopo"""
 
 _cardapio = """*{weekday}, {day}/{month}*
-hoje tem:
-\u2022 {main}
-\u2022 {complement}
-\u2022 {salad}
-\u2022 {dessert}"""
+hoje tem:"""
 
-unknown_command = 'Que isso?'
+unknown_command = 'Não entendi'
 
 subscribe = 'Inscrição feita!'
 
@@ -30,27 +27,18 @@ unsubscribe = 'Inscrição removida!'
 
 not_subscribed = 'Você não está inscrito!'
 
-def cardapio(menu):
-	timetuple = datetime.now(timezone('America/Sao_Paulo')).timetuple()
+def cardapio():
+    menu = fetch()
 
-	return _cardapio.format(
-			weekday=weekdays[timetuple.tm_wday],
-			day=timetuple.tm_mday,
-			month=str(timetuple.tm_mon).zfill(2),
-			main=menu['main'],
-			complement=menu['complement'],
-			salad=menu['salad'],
-			dessert=menu['dessert'])
+    dt = datetime.now(timezone('America/Sao_Paulo'))
 
-if __name__ == '__main__':
-	import json
-	import requests
-	from handler import JSON_SOURCE
+    strmenu = _cardapio.format(
+              weekday=weekdays[dt.weekday()],
+              day=dt.day,
+              month=str(dt.month).zfill(2))
 
-	resp = requests.get(JSON_SOURCE)
+    for item in menu:
+        if item:
+            strmenu += '\n\u2022 ' + item
 
-	menu = json.loads(resp.text)
-
-	timenow = time.localtime()
-
-	print(cardapio(menu, timenow))
+    return strmenu

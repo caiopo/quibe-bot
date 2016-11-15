@@ -2,11 +2,12 @@ import telegram
 import config
 import responses
 import requests
-import traceback
+import json
 
 from pytz import timezone
 from datetime import datetime
 from os.path import dirname, realpath
+
 
 # Botfather: /setcommands
 # quibe - cardápio do RU
@@ -14,149 +15,171 @@ from os.path import dirname, realpath
 # subscribe - inscreve-se para receber o cardápio do RU todos os dias
 # unsubscribe - cancela a inscrição
 
-JSON_SOURCE = 'https://voucomerno.ru/menu.json'
-AUTO_MSG_PATH = dirname(realpath(__file__)) + '/automsg.txt'
+AUTO_MSG_PATH = dirname(realpath(__file__)) + '/subscribers.json'
 AUTO_MSG_TIME = (10, 40)
 
 recently_sent = False
 
 def report_errors(func):
-	def catcher(bot, update):
-		try:
-			func(bot, update)
-		except Exception as e:
-			error(bot, update, e)
-	return catcher
+    def catcher(bot, update):
+        try:
+            func(bot, update)
+        except Exception as e:
+            error(bot, update, e)
+    return catcher
 
+def maintainer_only(func):
+    def assert_mntnr(bot, update):
+        if str(update.message.chat_id) != config.MAINTAINER_ID:
+            return
+        func(bot, update)
+    return assert_mntnr
 
 @report_errors
 def start(bot, update):
-	bot.sendMessage(chat_id=update.message.chat_id,
-					text=responses.start)
+    bot.sendMessage(chat_id=update.message.chat_id,
+                    text=responses.start)
 
 @report_errors
 def help(bot, update):
-	bot.sendMessage(chat_id=update.message.chat_id,
-					text=responses.help,
-					disable_web_page_preview=True)
+    bot.sendMessage(chat_id=update.message.chat_id,
+                    text=responses.help,
+                    disable_web_page_preview=True)
 
 @report_errors
 def unknown(bot, update):
-	if update.message.chat_id > 0: # user
-		bot.sendMessage(chat_id=update.message.chat_id,
-						text=responses.unknown_command)
+    if update.message.chat_id > 0: # user
+        bot.sendMessage(chat_id=update.message.chat_id,
+                        text=responses.unknown_command)
 
 @report_errors
 def quibe(bot, update):
-	_send_menu(bot, update.message.chat_id)
+    send_menu(bot, update.message.chat_id)
 
 @report_errors
-def subscribe(bot, update):
-	global automsg_targets
-
-	if str(update.message.chat_id) not in automsg_targets:
-		automsg_targets.append(str(update.message.chat_id))
-
-		bot.sendMessage(chat_id=update.message.chat_id,
-						text=responses.subscribe)
-		_save_automsg()
-	else:
-		bot.sendMessage(chat_id=update.message.chat_id,
-						text=responses.already_subscribed)
-
-@report_errors
-def unsubscribe(bot, update):
-	global automsg_targets
-
-	if str(update.message.chat_id) in automsg_targets:
-		automsg_targets.remove(str(update.message.chat_id))
-
-		bot.sendMessage(chat_id=update.message.chat_id,
-						text=responses.unsubscribe)
-		_save_automsg()
-	else:
-		bot.sendMessage(chat_id=update.message.chat_id,
-						text=responses.not_subscribed)
-
-@report_errors
+@maintainer_only
 def sendto(bot, update):
-	if str(update.message.chat_id) != config.MAINTAINER_ID:
-		bot.sendMessage(chat_id=update.message.chat_id,
-						text='This feature is only enabled to the maintainer')
-		return
+    try:
+        target = update.message.text.split()[1]
+    except IndexError:
+        bot.sendMessage(chat_id=update.message.chat_id,
+                        text='This command needs an argument')
+        return
 
-	try:
-		target = update.message.text.split()[1]
-	except IndexError:
-		bot.sendMessage(chat_id=update.message.chat_id,
-						text='This command needs an argument')
-		return
+    send_menu(bot, target)
 
-	resp = requests.get(JSON_SOURCE)
-
-	_send_menu(bot, target, resp.json())
+    bot.sendMessage(chat_id=update.message.chat_id,
+                    text='Sent')
 
 def error(bot, update, e):
-	bot.sendMessage(chat_id=config.MAINTAINER_ID,
-					text='Error on @quibebot\nUpdate: {}\nError type: {}\nError: {}'.format(update, type(e), e))
+    bot.sendMessage(chat_id=config.MAINTAINER_ID,
+                    text='Error on @quibebot\nUpdate: {}\nError type: {}\nError: {}'.format(update, type(e), e))
 
-def auto_msg_job(bot):
-	try:
-		global automsg_targets, recently_sent
+def send_menu(bot, chat_id, msg=None):
+    msg = msg or responses.cardapio()
 
-		if recently_sent:
-			recently_sent = False
-			return
+    if str(chat_id)[0] == '@': # if channel
+        msg = '@quibebot:\n' + msg
 
-		if _valid_time():
-			menu_dict = requests.get(JSON_SOURCE).json()
+    bot.sendMessage(chat_id=chat_id,
+                    text=msg,
+                    parse_mode=telegram.ParseMode.MARKDOWN)
 
-			recently_sent = True
+class PersistentList:
+    def __init__(self, path):
+        self.list = []
+        self.path = path
 
-			for chat_id in automsg_targets:
-				_send_menu(bot, chat_id, menu_dict)
-	except Exception as e:
-		error(bot, None, e)
+        try:
+            with open(self.path) as file:
+                content = file.read()
 
-def _send_menu(bot, chat_id, menu_dict=None):
-	if not menu_dict:
-		menu_dict = requests.get(JSON_SOURCE).json()
+                if not content:
+                    return
 
-	msg = responses.cardapio(menu_dict)
+                self.list = json.loads(content)
 
-	if str(chat_id)[0] == '@':
-		msg = '@quibebot:\n' + msg
+        except FileNotFoundError:
+            with open(self.path, 'w') as _:
+                pass
 
-	bot.sendMessage(chat_id=chat_id,
-					text=msg,
-					parse_mode=telegram.ParseMode.MARKDOWN)
+    def append(self, item):
+        if item in self.list:
+            return False
 
-def _start_automsg():
-	global automsg_targets
+        self.list.append(item)
+        self.save()
 
-	print('Using file:', AUTO_MSG_PATH)
+        return True
 
-	try:
-		with open(AUTO_MSG_PATH) as targets:
-			automsg_targets = [chat_id.strip('\n') for chat_id in targets]
-	except FileNotFoundError:
-		open(AUTO_MSG_PATH, 'w').close()
-		automsg_targets = []
+    def remove(self, item):
+        if item not in self.list:
+            return False
 
-	print(automsg_targets)
+        self.list.remove(item)
+        self.save()
 
-def _save_automsg():
-	global automsg_targets
-	with open(AUTO_MSG_PATH, 'w') as targets:
-		for chat_id in automsg_targets:
-			targets.write(chat_id+'\n')
+        return True
 
-	print(automsg_targets)
+    def save(self):
+        with open(self.path, 'w') as file:
+            file.write(json.dumps(self.list))
 
+    def __iter__(self):
+        return iter(self.list)
 
-def _valid_time():
-	timetuple = datetime.now(timezone('America/Sao_Paulo')).timetuple()
+    def __contains__(self, item):
+        return item in self.list
 
-	return (timetuple.tm_hour, timetuple.tm_min) == AUTO_MSG_TIME
+class AutoMessageManager:
+    def __init__(self):
+        print('Using file:', AUTO_MSG_PATH)
 
-_start_automsg()
+        self.targets = PersistentList(AUTO_MSG_PATH)
+
+        self.recently_sent = False
+
+    def subscribe(self, bot, update):
+        if self.targets.append(str(update.message.chat_id)):
+            bot.sendMessage(chat_id=update.message.chat_id,
+                            text=responses.subscribe)
+        else:
+            bot.sendMessage(chat_id=update.message.chat_id,
+                            text=responses.already_subscribed)
+
+    def unsubscribe(self, bot, update):
+        if self.targets.remove(str(update.message.chat_id)):
+            bot.sendMessage(chat_id=update.message.chat_id,
+                            text=responses.unsubscribe)
+        else:
+            bot.sendMessage(chat_id=update.message.chat_id,
+                            text=responses.not_subscribed)
+
+    def job(self, bot):
+        try:
+            if self.recently_sent:
+                self.recently_sent = False
+                return
+
+            if valid_time():
+                menu = responses.cardapio()
+
+                self.recently_sent = True
+
+                for chat_id in self.targets:
+                    try:
+                        send_menu(bot, chat_id, menu)
+
+                    except telegram.error.Unauthorized:
+                        self.targets.remove(chat_id)
+
+                    except Exception as e:
+                        error(bot, None, e)
+
+        except Exception as e:
+            error(bot, None, e)
+
+def valid_time():
+    now = datetime.now(timezone('America/Sao_Paulo'))
+
+    return (now.hour, now.minute) == AUTO_MSG_TIME

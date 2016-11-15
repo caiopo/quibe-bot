@@ -8,47 +8,52 @@ import config
 from telegram import Updater
 
 def resolve_args():
-	parser = argparse.ArgumentParser()
-	parser.add_argument('-v', '--verbose', action='store_true')
-	args = parser.parse_args()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-v', '--verbose', action='store_true')
+    args = parser.parse_args()
 
-	if args.verbose:
-		logging.basicConfig(level=logging.DEBUG,
-							format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    if args.verbose:
+        logging.basicConfig(level=logging.DEBUG,
+                            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 def main():
-	resolve_args()
+    resolve_args()
 
-	updater = Updater(token=config.BOT_TOKEN)
+    updater = Updater(token=config.BOT_TOKEN)
 
-	dispatcher = updater.dispatcher
-	job_queue = updater.job_queue
+    dispatcher = updater.dispatcher
+    job_queue = updater.job_queue
 
-	print(updater.bot.getMe())
+    print(updater.bot.getMe())
 
-	dispatcher.addTelegramCommandHandler('start', handler.help)
-	dispatcher.addTelegramCommandHandler('help', handler.help)
+    auto_msg = handler.AutoMessageManager()
 
-	dispatcher.addTelegramCommandHandler('quibe', handler.quibe)
-	dispatcher.addTelegramCommandHandler('kibe', handler.quibe)
+    subscribe = lambda bot, update: auto_msg.subscribe(bot, update)
+    unsubscribe = lambda bot, update: auto_msg.unsubscribe(bot, update)
 
-	dispatcher.addTelegramCommandHandler('subscribe', handler.subscribe)
-	dispatcher.addTelegramCommandHandler('inscrever', handler.subscribe)
+    dispatcher.addTelegramCommandHandler('start', handler.help)
+    dispatcher.addTelegramCommandHandler('help', handler.help)
 
-	dispatcher.addTelegramCommandHandler('unsubscribe', handler.unsubscribe)
-	dispatcher.addTelegramCommandHandler('desinscrever', handler.unsubscribe)
+    dispatcher.addTelegramCommandHandler('quibe', handler.quibe)
+    dispatcher.addTelegramCommandHandler('kibe', handler.quibe)
+
+    dispatcher.addTelegramCommandHandler('subscribe', subscribe)
+    dispatcher.addTelegramCommandHandler('inscrever', subscribe)
+
+    dispatcher.addTelegramCommandHandler('unsubscribe', unsubscribe)
+    dispatcher.addTelegramCommandHandler('desinscrever', unsubscribe)
 
 
-	dispatcher.addTelegramMessageHandler(handler.unknown)
-	dispatcher.addUnknownTelegramCommandHandler(handler.unknown)
+    dispatcher.addTelegramMessageHandler(handler.unknown)
+    dispatcher.addUnknownTelegramCommandHandler(handler.unknown)
 
-	if config.MAINTAINER_ID:
-		dispatcher.addTelegramCommandHandler('sendto', handler.sendto)
-		dispatcher.addErrorHandler(handler.error)
+    if config.MAINTAINER_ID:
+        dispatcher.addTelegramCommandHandler('sendto', handler.sendto)
+        dispatcher.addErrorHandler(handler.error)
 
-	job_queue.put(handler.auto_msg_job, 50)
+    job_queue.put(lambda bot: auto_msg.job(bot), 50)
 
-	updater.start_polling()
+    updater.start_polling()
 
 if __name__ == '__main__':
-	main()
+    main()

@@ -1,4 +1,7 @@
-BOT_TOKEN='yourtoken' # the token you get from botfather
-MAINTAINER_ID='' # the chat_id of the maintainer, used to alert about possible errors.
-                 # leave empty to disable this feature.
-                 # note that leaving empty also disables the /sendto command
+# the token you get from botfather
+BOT_TOKEN = 'your token'
+
+# the chat_id of the maintainer, used to alert about possible errors.
+# leave empty to disable this feature.
+# note that leaving empty also disables the /sendto command
+MAINTAINER_ID = 'your chat_id'
