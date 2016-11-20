@@ -1,8 +1,11 @@
 import requests
 import bs4
 
+from re import compile
 from pytz import timezone
 from datetime import datetime
+
+spaces = compile('\s+')
 
 def fetch():
     resp = requests.get('http://ru.ufsc.br/ru/')
@@ -18,7 +21,7 @@ def fetch():
 
     today = cardapio[(weekday * 6 + 2):(weekday * 6 + 6)]
 
-    today = [item.strip(' \n\xa0').replace('\n', '').replace('/', ' e ').lower()
+    today = [spaces.sub(' ', item.strip(' \n\xa0').replace('\n', '').replace('/', ' e ').lower())
                 for item in today]
 
     return today
