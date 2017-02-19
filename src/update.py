@@ -1,8 +1,16 @@
 import requests
 import bs4
 
+from re import compile
 from pytz import timezone
 from datetime import datetime
+
+spaces = compile('\s+')
+
+
+def sanitize(string):
+    return spaces.sub(' ', (string.strip(' \n\xa0').replace('\n', '')
+                            .replace('/', ' e ').lower()))
 
 
 def fetch():
@@ -19,7 +27,6 @@ def fetch():
 
     today = cardapio[(weekday * 6 + 2):(weekday * 6 + 6)]
 
-    today = [it.strip(' \n\xa0').replace('\n', '').replace('/', ' e ').lower()
-             for it in today]
+    today = [sanitize(item) for item in today]
 
     return today
