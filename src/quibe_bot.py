@@ -7,14 +7,18 @@ import config
 
 from telegram import Updater
 
+
 def resolve_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('-v', '--verbose', action='store_true')
     args = parser.parse_args()
 
     if args.verbose:
-        logging.basicConfig(level=logging.DEBUG,
-                            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        logging.basicConfig(
+            level=logging.DEBUG,
+            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        )
+
 
 def main():
     resolve_args()
@@ -28,8 +32,11 @@ def main():
 
     auto_msg = handler.AutoMessageManager()
 
-    subscribe = lambda bot, update: auto_msg.subscribe(bot, update)
-    unsubscribe = lambda bot, update: auto_msg.unsubscribe(bot, update)
+    def subscribe(bot, update):
+        auto_msg.subscribe(bot, update)
+
+    def unsubscribe(bot, update):
+        auto_msg.unsubscribe(bot, update)
 
     dispatcher.addTelegramCommandHandler('start', handler.help)
     dispatcher.addTelegramCommandHandler('help', handler.help)
@@ -43,7 +50,6 @@ def main():
     dispatcher.addTelegramCommandHandler('unsubscribe', unsubscribe)
     dispatcher.addTelegramCommandHandler('desinscrever', unsubscribe)
 
-
     dispatcher.addTelegramMessageHandler(handler.unknown)
     dispatcher.addUnknownTelegramCommandHandler(handler.unknown)
 
@@ -54,6 +60,7 @@ def main():
     job_queue.put(lambda bot: auto_msg.job(bot), 50)
 
     updater.start_polling()
+
 
 if __name__ == '__main__':
     main()

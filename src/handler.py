@@ -1,7 +1,6 @@
 import telegram
 import config
 import responses
-import requests
 import json
 
 from pytz import timezone
@@ -20,6 +19,7 @@ AUTO_MSG_TIME = (10, 40)
 
 recently_sent = False
 
+
 def report_errors(func):
     def catcher(bot, update):
         try:
@@ -28,6 +28,7 @@ def report_errors(func):
             error(bot, update, e)
     return catcher
 
+
 def maintainer_only(func):
     def assert_mntnr(bot, update):
         if str(update.message.chat_id) != config.MAINTAINER_ID:
@@ -35,10 +36,12 @@ def maintainer_only(func):
         func(bot, update)
     return assert_mntnr
 
+
 @report_errors
 def start(bot, update):
     bot.sendMessage(chat_id=update.message.chat_id,
                     text=responses.start)
+
 
 @report_errors
 def help(bot, update):
@@ -46,15 +49,18 @@ def help(bot, update):
                     text=responses.help,
                     disable_web_page_preview=True)
 
+
 @report_errors
 def unknown(bot, update):
-    if update.message.chat_id > 0: # user
+    if update.message.chat_id > 0:  # user
         bot.sendMessage(chat_id=update.message.chat_id,
                         text=responses.unknown_command)
+
 
 @report_errors
 def quibe(bot, update):
     send_menu(bot, update.message.chat_id)
+
 
 @report_errors
 @maintainer_only
@@ -71,19 +77,23 @@ def sendto(bot, update):
     bot.sendMessage(chat_id=update.message.chat_id,
                     text='Sent')
 
+
 def error(bot, update, e):
     bot.sendMessage(chat_id=config.MAINTAINER_ID,
-                    text='Error on @quibebot\nUpdate: {}\nError type: {}\nError: {}'.format(update, type(e), e))
+                    text='Error on @quibebot\nUpdate: {}\n\
+                    Error type: {}\nError: {}'.format(update, type(e), e))
+
 
 def send_menu(bot, chat_id, msg=None):
     msg = msg or responses.cardapio()
 
-    if str(chat_id)[0] == '@': # if channel
+    if str(chat_id)[0] == '@':  # if channel
         msg = '@quibebot:\n' + msg
 
     bot.sendMessage(chat_id=chat_id,
                     text=msg,
                     parse_mode=telegram.ParseMode.MARKDOWN)
+
 
 class PersistentList:
     def __init__(self, path):
@@ -100,7 +110,7 @@ class PersistentList:
                 self.list = json.loads(content)
 
         except FileNotFoundError:
-            with open(self.path, 'w') as _:
+            with open(self.path, 'w'):
                 pass
 
     def append(self, item):
@@ -130,6 +140,7 @@ class PersistentList:
 
     def __contains__(self, item):
         return item in self.list
+
 
 class AutoMessageManager:
     def __init__(self):
@@ -178,6 +189,7 @@ class AutoMessageManager:
 
         except Exception as e:
             error(bot, None, e)
+
 
 def valid_time():
     now = datetime.now(timezone('America/Sao_Paulo'))
