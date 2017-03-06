@@ -5,19 +5,13 @@ import json
 
 from pytz import timezone
 from datetime import datetime
-from os.path import dirname, realpath
-
+from db import Database
 
 # Botfather: /setcommands
 # quibe - cardápio do RU
 # help - sobre quibebot
 # subscribe - inscreve-se para receber o cardápio do RU todos os dias
 # unsubscribe - cancela a inscrição
-
-AUTO_MSG_PATH = dirname(realpath(__file__)) + '/subscribers.json'
-AUTO_MSG_TIME = (10, 40)
-
-recently_sent = False
 
 
 def report_errors(func):
@@ -79,9 +73,11 @@ def sendto(bot, update):
 
 
 def error(bot, update, e):
+    text = ('Error on @quibebot\nUpdate: {}\n'
+            'Error type: {}\nError: {}').format(update, type(e), e)
+
     bot.sendMessage(chat_id=config.MAINTAINER_ID,
-                    text='Error on @quibebot\nUpdate: {}\n\
-                    Error type: {}\nError: {}'.format(update, type(e), e))
+                    text=text)
 
 
 def send_menu(bot, chat_id, msg=None):
@@ -142,16 +138,17 @@ class PersistentList:
         return item in self.list
 
 
+AUTO_MSG_TIME = (10, 40)
+
+
 class AutoMessageManager:
     def __init__(self):
-        print('Using file:', AUTO_MSG_PATH)
-
-        self.targets = PersistentList(AUTO_MSG_PATH)
+        self.targets = Database()
 
         self.recently_sent = False
 
     def subscribe(self, bot, update):
-        if self.targets.append(str(update.message.chat_id)):
+        if self.targets.add(str(update.message.chat_id)):
             bot.sendMessage(chat_id=update.message.chat_id,
                             text=responses.subscribe)
         else:

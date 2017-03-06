@@ -20,7 +20,7 @@ def resolve_args():
         )
 
 
-def main():
+if __name__ == '__main__':
     resolve_args()
 
     updater = Updater(token=config.BOT_TOKEN)
@@ -59,8 +59,10 @@ def main():
 
     job_queue.put(lambda bot: auto_msg.job(bot), 50)
 
-    updater.start_polling()
+    updater.start_webhook(
+        listen='0.0.0.0', port=config.PORT, url_path=config.BOT_TOKEN)
 
+    updater.bot.setWebhook(
+        'https://' + config.APP_NAME + '.herokuapp.com/' + config.BOT_TOKEN)
 
-if __name__ == '__main__':
-    main()
+    updater.idle()
