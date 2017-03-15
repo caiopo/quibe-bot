@@ -5,7 +5,7 @@ import handler
 import argparse
 import config
 
-from telegram import Updater
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, Job
 
 
 def resolve_args():
@@ -38,31 +38,31 @@ if __name__ == '__main__':
     def unsubscribe(bot, update):
         auto_msg.unsubscribe(bot, update)
 
-    dispatcher.addTelegramCommandHandler('start', handler.help)
-    dispatcher.addTelegramCommandHandler('help', handler.help)
+    dispatcher.add_handler(CommandHandler('start', handler.help))
+    dispatcher.add_handler(CommandHandler('help', handler.help))
 
-    dispatcher.addTelegramCommandHandler('quibe', handler.quibe)
-    dispatcher.addTelegramCommandHandler('kibe', handler.quibe)
+    dispatcher.add_handler(CommandHandler('quibe', handler.quibe))
+    dispatcher.add_handler(CommandHandler('kibe', handler.quibe))
 
-    dispatcher.addTelegramCommandHandler('subscribe', subscribe)
-    dispatcher.addTelegramCommandHandler('inscrever', subscribe)
+    dispatcher.add_handler(CommandHandler('subscribe', subscribe))
+    dispatcher.add_handler(CommandHandler('inscrever', subscribe))
 
-    dispatcher.addTelegramCommandHandler('unsubscribe', unsubscribe)
-    dispatcher.addTelegramCommandHandler('desinscrever', unsubscribe)
+    dispatcher.add_handler(CommandHandler('unsubscribe', unsubscribe))
+    dispatcher.add_handler(CommandHandler('desinscrever', unsubscribe))
 
-    dispatcher.addTelegramMessageHandler(handler.unknown)
-    dispatcher.addUnknownTelegramCommandHandler(handler.unknown)
+    dispatcher.add_handler(MessageHandler(Filters.text, handler.unknown))
 
     if config.MAINTAINER_ID:
-        dispatcher.addTelegramCommandHandler('sendto', handler.sendto)
-        dispatcher.addErrorHandler(handler.error)
+        dispatcher.add_handler(CommandHandler('sendto', handler.sendto))
+        dispatcher.add_error_handler(handler.error)
 
-    job_queue.put(lambda bot: auto_msg.job(bot), 50)
+    job_queue.put(Job(
+        lambda bot, job: auto_msg.job(bot),
+        interval=50,
+    ))
 
     updater.start_webhook(
-        listen='0.0.0.0', port=config.PORT, url_path=config.BOT_TOKEN)
-
-    updater.bot.setWebhook(
-        'https://' + config.APP_NAME + '.herokuapp.com/' + config.BOT_TOKEN)
+        listen='0.0.0.0', port=config.PORT, url_path=config.BOT_TOKEN,
+        webhook_url=config.WEBHOOK_URL)
 
     updater.idle()

@@ -11,3 +11,5 @@ MAINTAINER_ID = environ['MAINTAINER_ID']
 APP_NAME = environ['APP_NAME']
 
 PORT = int(environ.get('PORT', 5000))
+
+WEBHOOK_URL = 'https://' + APP_NAME + '.herokuapp.com/' + BOT_TOKEN
