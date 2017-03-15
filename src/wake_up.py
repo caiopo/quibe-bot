@@ -1,4 +1,6 @@
 import requests
 from os import environ
 
-requests.get('https://' + environ['APP_NAME'] + '.herokuapp.com/')
+resp = requests.get('https://' + environ['APP_NAME'] + '.herokuapp.com/')
+
+print(resp.status_code)
