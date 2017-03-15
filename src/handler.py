@@ -138,9 +138,6 @@ class PersistentList:
         return item in self.list
 
 
-AUTO_MSG_TIME = (10, 40)
-
-
 class AutoMessageManager:
     def __init__(self):
         self.targets = Database()
@@ -191,4 +188,4 @@ class AutoMessageManager:
 def valid_time():
     now = datetime.now(timezone('America/Sao_Paulo'))
 
-    return (now.hour, now.minute) == AUTO_MSG_TIME
+    return (now.hour, now.minute) == config.AUTO_MSG_TIME
