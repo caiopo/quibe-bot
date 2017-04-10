@@ -1,7 +1,6 @@
 import telegram
 import config
 import responses
-import json
 
 from pytz import timezone
 from datetime import datetime
