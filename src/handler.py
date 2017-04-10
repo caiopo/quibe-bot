@@ -91,53 +91,6 @@ def send_menu(bot, chat_id, msg=None):
                     parse_mode=telegram.ParseMode.MARKDOWN)
 
 
-class PersistentList:
-    def __init__(self, path):
-        self.list = []
-        self.path = path
-
-        try:
-            with open(self.path) as file:
-                content = file.read()
-
-                if not content:
-                    return
-
-                self.list = json.loads(content)
-
-        except FileNotFoundError:
-            with open(self.path, 'w'):
-                pass
-
-    def append(self, item):
-        if item in self.list:
-            return False
-
-        self.list.append(item)
-        self.save()
-
-        return True
-
-    def remove(self, item):
-        if item not in self.list:
-            return False
-
-        self.list.remove(item)
-        self.save()
-
-        return True
-
-    def save(self):
-        with open(self.path, 'w') as file:
-            file.write(json.dumps(self.list))
-
-    def __iter__(self):
-        return iter(self.list)
-
-    def __contains__(self, item):
-        return item in self.list
-
-
 class AutoMessageManager:
     def __init__(self):
         self.targets = Database()
@@ -177,6 +130,10 @@ class AutoMessageManager:
 
                     except telegram.error.Unauthorized:
                         self.targets.remove(chat_id)
+
+                    except telegram.error.ChatMigrated as e:
+                        self.targets.remove(chat_id)
+                        self.targets.add(e.new_chat_id)
 
                     except Exception as e:
                         error(bot, None, e)
