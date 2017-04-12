@@ -16,7 +16,7 @@ class Database:
     def remove(self, user):
         user = str(user)
         if user in self:
-            self.table.delete(dict(user_id=user))
+            self.table.delete(user_id=user)
             return True
         return False
 
