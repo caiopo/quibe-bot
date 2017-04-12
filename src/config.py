@@ -14,4 +14,4 @@ PORT = int(environ.get('PORT', 5000))
 
 WEBHOOK_URL = 'https://' + APP_NAME + '.herokuapp.com/' + BOT_TOKEN
 
-AUTO_MSG_TIME = (10, 40)
+AUTO_MSG_TIME = (21, 32)

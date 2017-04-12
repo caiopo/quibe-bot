@@ -1,1 +1,1 @@
-web: python src/quibe_bot.py -v
+web: python src/quibe_bot.py

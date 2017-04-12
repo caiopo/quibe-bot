@@ -7,18 +7,21 @@ class Database:
         self.table = self.db['subscribers']
 
     def add(self, user):
+        user = str(user)
         if user not in self:
             self.table.insert(dict(user_id=user))
             return True
         return False
 
     def remove(self, user):
+        user = str(user)
         if user in self:
             self.table.delete(dict(user_id=user))
             return True
         return False
 
     def __contains__(self, user):
+        user = str(user)
         return self.table.find_one(user_id=user) is not None
 
     def __iter__(self):

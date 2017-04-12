@@ -119,6 +119,8 @@ class AutoMessageManager:
                 return
 
             if valid_time():
+                print('preparando para executar o job')
+
                 menu = responses.cardapio()
 
                 self.recently_sent = True
@@ -129,13 +131,23 @@ class AutoMessageManager:
 
                     except telegram.error.Unauthorized:
                         self.targets.remove(chat_id)
+                        bot.sendMessage(
+                            chat_id=config.MAINTAINER_ID,
+                            text='Unauthorized: removed {}'.format(chat_id))
 
                     except telegram.error.ChatMigrated as e:
                         self.targets.remove(chat_id)
-                        self.targets.add(e.new_chat_id)
+                        self.targets.add(str(e.new_chat_id))
+
+                        bot.sendMessage(
+                            chat_id=config.MAINTAINER_ID,
+                            text='ChatMigrated: {} to {}'.format(
+                                chat_id, e.new_chat_id))
 
                     except Exception as e:
                         error(bot, None, e)
+
+                print('job finalizado')
 
         except Exception as e:
             error(bot, None, e)
