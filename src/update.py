@@ -19,9 +19,9 @@ def fetch():
     if not resp.ok:
         return []
 
-    bs = bs4.BeautifulSoup(resp.content, 'html.parser')
+    soup = bs4.BeautifulSoup(resp.content, 'lxml')
 
-    cardapio = [entry.text for entry in bs.find_all(align='center')][3:]
+    cardapio = [entry.text for entry in soup.find_all(align='center')][3:]
 
     weekday = datetime.now(timezone('America/Sao_Paulo')).weekday()
 
