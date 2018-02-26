@@ -1,8 +1,17 @@
 import requests
 import bs4
 
+import re
 from pytz import timezone
 from datetime import datetime
+
+
+spaces = re.compile('\s+')
+
+
+def sanitize(string):
+    return spaces.sub(' ', (string.strip(' \n\xa0').replace('\n', '')
+                            .replace('/', ' e ').lower()))
 
 
 def fetch():
@@ -17,7 +26,7 @@ def fetch():
     rows = table.find_all('tr')
     weekday = datetime.now(timezone('America/Sao_Paulo')).weekday()
 
-    today = [entry.get_text(strip=True)
+    today = [sanitize(entry.text)
              for entry in rows[weekday].find_all('td')[1:]]
 
     return today
