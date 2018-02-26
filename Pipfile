@@ -16,6 +16,7 @@ requests = "*"
 bs4 = "*"
 lxml = "*"
 dataset = "*"
+psycopg2 = "*"
 python-telegram-bot = "*"
 pytz = "*"
 
