@@ -1,0 +1,24 @@
+[[source]]
+
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+
+[requires]
+
+python_version = "3.6"
+
+
+[packages]
+
+requests = "*"
+bs4 = "*"
+lxml = "*"
+dataset = "*"
+python-telegram-bot = "*"
+pytz = "*"
+
+
+[dev-packages]
+
