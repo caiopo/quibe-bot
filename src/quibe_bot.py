@@ -56,10 +56,7 @@ if __name__ == '__main__':
         dispatcher.add_handler(CommandHandler('sendto', handler.sendto))
         dispatcher.add_error_handler(handler.error)
 
-    job_queue.put(Job(
-        lambda bot, job: auto_msg.job(bot),
-        interval=50,
-    ))
+    job_queue.run_repeating(lambda bot, job: auto_msg.job(bot), interval=50)
 
     updater.start_webhook(
         listen='0.0.0.0', port=config.PORT, url_path=config.BOT_TOKEN,
