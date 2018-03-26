@@ -35,22 +35,24 @@ def cardapio():
 
     dt = datetime.now(timezone('America/Sao_Paulo'))
 
-    strmenu = _cardapio.format(
-        weekday=weekdays[dt.weekday()],
-        day=dt.day,
-        month=str(dt.month).zfill(2)
-    )
+    menu_lines = [
+        _cardapio.format(
+            weekday=weekdays[dt.weekday()],
+            day=dt.day,
+            month=str(dt.month).zfill(2)
+        )
+    ]
 
     if not any(menu):
-        strmenu += '\n' + 'cardápio de hoje indisponível'
+        menu_lines.append('cardápio de hoje indisponível')
     else:
-        strmenu += '\n' + 'hoje tem:'
+        menu_lines.append('hoje tem:')
 
         for item in menu:
             if item:
-                strmenu += '\n\u2022 ' + item
+                menu_lines.append('\u2022 ' + item)
 
-    return strmenu
+    return '\n'.join(menu_lines)
 
 
 if __name__ == '__main__':
