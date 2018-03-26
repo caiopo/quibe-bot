@@ -1,6 +1,6 @@
 from pytz import timezone
 from datetime import datetime
-from update import fetch
+from libru import ru
 
 
 weekdays = ['Segunda', 'Terça', 'Quarta', 'Quinta',
@@ -31,7 +31,7 @@ not_subscribed = 'Você não está inscrito!'
 
 
 def cardapio():
-    menu = fetch()
+    menu = ru()
 
     dt = datetime.now(timezone('America/Sao_Paulo'))
 

@@ -12,13 +12,11 @@ python_version = "3.6"
 
 [packages]
 
-requests = "*"
-bs4 = "*"
-lxml = "*"
 dataset = "*"
-psycopg2 = "*"
+"psycopg2" = "*"
 python-telegram-bot = "*"
 pytz = "*"
+libru = "*"
 
 
 [dev-packages]
