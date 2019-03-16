@@ -59,7 +59,8 @@ if __name__ == '__main__':
     job_queue.run_repeating(lambda bot, job: auto_msg.job(bot), interval=50)
 
     updater.start_webhook(
-        listen='0.0.0.0', port=config.PORT, url_path=config.BOT_TOKEN,
-        webhook_url=config.WEBHOOK_URL)
+        listen='0.0.0.0', port=config.PORT, url_path=config.BOT_TOKEN)
+
+    updater.bot.set_webhook(config.WEBHOOK_URL)
 
     updater.idle()

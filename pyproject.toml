@@ -7,7 +7,7 @@ license = "MIT"
 
 [tool.poetry.dependencies]
 python = "^3.7"
-python-telegram-bot = "=10.0.1"
+python-telegram-bot = "=10.1.0"
 dataset = "=1.0.6"
 libru = "^0.1.2"
 normality = "=0.6.1"
