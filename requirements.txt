@@ -8,7 +8,7 @@ dataset==1.0.6
 future==0.17.1
 idna==2.8
 libru==0.1.3
-lxml==4.4.0
+lxml==4.9.1
 Mako==1.1.0
 MarkupSafe==1.1.1
 normality==0.6.1
